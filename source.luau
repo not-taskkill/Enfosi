@@ -54,6 +54,25 @@ local function applycham(obj : Model)
 	cham.Parent = PARENT
 	cham.Adornee = obj
 
+	local humanoid = obj:FindFirstChildOfClass("Humanoid")
+	if humanoid then
+		humanoid.Died:Once(function()
+			pdestroy(cham)
+			return
+		end)
+	end
+
+	task.spawn(function()
+		repeat 
+			for _, inst in next, obj:GetDescendants() do
+				if inst:IsA("Highlight") then
+					inst:Destroy()
+				end
+			end
+			task.wait(.5)
+		until not obj:IsDescendantOf(NPCs)
+	end)
+
 	obj.AncestryChanged:Connect(function(_, parent)
 		if parent ~= NPCs then
 			pdestroy(cham)
@@ -61,6 +80,7 @@ local function applycham(obj : Model)
 		end
 	end)
 end
+
 
 for _, obj in next, NPCs:GetChildren() do
 	if obj:IsA("Model") and obj:GetAttribute("Points") then
