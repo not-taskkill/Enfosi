@@ -62,14 +62,14 @@ local function applycham(obj : Model)
 	end)
 end
 
-for _, obj in pairs(NPCs:GetChildren()) do
-	if obj:GetAttribute("Points") or obj:GetAttribute("OutcomeDamageType") then
+for _, obj in next, NPCs:GetChildren() do
+	if obj:IsA("Model") and obj:GetAttribute("Points") then
 		task.spawn(applycham, obj)
 	end
 end
 
 NPCs.ChildAdded:Connect(function(obj)
-	if obj:GetAttribute("Points") or obj:GetAttribute("OutcomeDamageType") then
+	if obj:IsA("Model") and obj:GetAttribute("Points") then
 		task.spawn(applycham, obj)
 	end
 end)
