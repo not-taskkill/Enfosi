@@ -1,6 +1,8 @@
 -- will break somethime
 -- just source because i dont want to obf ts
 
+if not game:IsLoaded() then game.Loaded:Wait() end
+
 local CoreGui = game:GetService("CoreGui")
 local StarterGui = game:GetService("StarterGui")
 
