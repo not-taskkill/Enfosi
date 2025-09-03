@@ -1,8 +1,11 @@
 -- will break somethime
 -- just source because i dont want to obf ts
 
-local COREGUI = game:GetService("CoreGui")
-local NPCs = workspace.NPCs
+local CoreGui = game:GetService("CoreGui")
+local StarterGui = game:GetService("StarterGui")
+
+local NPCs = workspace:WaitForChild("NPCs")
+local CHAM_COLOR = Color3.fromRGB(179, 255, 230)
 local PARENT = nil
 
 local function randomString()
@@ -13,52 +16,64 @@ local function randomString()
 	return table.concat(t)
 end
 
-do
-	if get_hidden_gui or gethui then
-		local Main = Instance.new("ScreenGui")
-		Main.Name = randomString()
-		Main.Parent = (get_hidden_gui or gethui)()
-		PARENT = Main
-	elseif (not is_sirhurt_closure) and (syn and syn.protect_gui) then
-		local Main = Instance.new("ScreenGui")
-		Main.Name = randomString()
-		syn.protect_gui(Main)
-		Main.Parent = COREGUI
-		PARENT = Main
-	elseif COREGUI:FindFirstChild("RobloxGui") then
-		PARENT = COREGUI.RobloxGui
-	else
-		local Main = Instance.new("ScreenGui")
-		Main.Name = randomString()
-		Main.Parent = COREGUI
-		PARENT = Main
-	end
+local function pdestroy(obj)
+	pcall(game.Destroy, obj)
 end
 
-local function applycham(obj)
-    local cham = Instance.new("Highlight", PARENT)
-    cham.Name = randomString()
-	cham.FillTransparency = 1
-	cham.OutlineColor = Color3.fromRGB(157, 224, 255)
+if get_hidden_gui or gethui then
+	local hiddenUI = get_hidden_gui or gethui
+	local Main = Instance.new("ScreenGui")
+	Main.Name = randomString()
+	Main.Parent = hiddenUI()
+	PARENT = Main
+elseif (not is_sirhurt_closure) and (syn and syn.protect_gui) then
+	local Main = Instance.new("ScreenGui")
+	Main.Name = randomString()
+	syn.protect_gui(Main)
+	Main.Parent = CoreGui
+	PARENT = Main
+elseif CoreGui:FindFirstChild("RobloxGui") then
+	PARENT = CoreGui.RobloxGui
+else
+	local Main = Instance.new("ScreenGui")
+	Main.Name = randomString()
+	Main.Parent = CoreGui
+	PARENT = Main
+end
+
+local function applycham(obj : Model)
+	if not (obj:IsDescendantOf(NPCs)) then return end
+
+	local cham = Instance.new("Highlight")
 	cham.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+	cham.FillColor = CHAM_COLOR
+	cham.OutlineColor = CHAM_COLOR
+	cham.FillTransparency = 0.65
+	cham.Parent = PARENT
 	cham.Adornee = obj
 
-    obj:GetPropertyChangedSignal("Parent"):Connect(function()
-        if obj == nil or not obj:IsDescendantOf(NPCs) then
-            pcall(game.Destroy, cham)
-            return
-        end
-    end)
+	obj.AncestryChanged:Connect(function(_, parent)
+		if parent ~= NPCs then
+			pdestroy(cham)
+			return
+		end
+	end)
 end
 
 for _, obj in pairs(NPCs:GetChildren()) do
-    if obj:GetAttribute("Points") or obj:GetAttribute("OutcomeDamageType") then
-        task.spawn(applycham, obj)
-    end
+	if obj:GetAttribute("Points") or obj:GetAttribute("OutcomeDamageType") then
+		task.spawn(applycham, obj)
+	end
 end
 
 NPCs.ChildAdded:Connect(function(obj)
-    if obj:GetAttribute("Points") or obj:GetAttribute("OutcomeDamageType") then
-        task.spawn(applycham, obj)
-    end
+	if obj:GetAttribute("Points") or obj:GetAttribute("OutcomeDamageType") then
+		task.spawn(applycham, obj)
+	end
 end)
+
+StarterGui:SetCore("SendNotification", {
+	Title = "enfosis script | esp",
+	Text = "this script probably will break later ✌️",
+	Duration = 5
+})
